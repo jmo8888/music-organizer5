@@ -1,9 +1,10 @@
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * A class to hold details of audio tracks.
  * Individual tracks may be played.
- * 
+ *
  * @author David J. Barnes and Michael Kölling
  * @version 2011.07.31
  */
@@ -15,7 +16,9 @@ public class MusicOrganizer
     private MusicPlayer player;
     // A reader that can read music files and load them as tracks.
     private TrackReader reader;
-
+    // A random object
+    private Random random;
+    
     /**
      * Create a MusicOrganizer
      */
@@ -24,6 +27,7 @@ public class MusicOrganizer
         tracks = new ArrayList<Track>();
         player = new MusicPlayer();
         reader = new TrackReader();
+        random = new Random();
         readLibrary("audio");
         System.out.println("Music library loaded. " + getNumberOfTracks() + " tracks.");
         System.out.println();
@@ -56,6 +60,7 @@ public class MusicOrganizer
         if(indexValid(index)) {
             Track track = tracks.get(index);
             player.startPlaying(track.getFilename());
+            track.incrementPlayCount();
             System.out.println("Now playing: " + track.getArtist() + " - " + track.getTitle());
         }
     }
@@ -86,7 +91,7 @@ public class MusicOrganizer
     public void listAllTracks()
     {
         System.out.println("Track listing: ");
-
+        
         for(Track track : tracks) {
             System.out.println(track.getDetails());
         }
@@ -134,7 +139,7 @@ public class MusicOrganizer
     {
         player.stop();
     }
-
+    
     /**
      * Determine whether the given index is valid for the collection.
      * Print an error message if it is not.
@@ -164,10 +169,42 @@ public class MusicOrganizer
     private void readLibrary(String folderName)
     {
         ArrayList<Track> tempTracks = reader.readTracks(folderName, ".mp3");
-
+        
         // Put all thetracks into the organizer.
         for(Track track : tempTracks) {
             addTrack(track);
         }
     }
+    
+    /**
+     * Get a random number
+     */
+    private int getRandomNumber(){
+        return random.nextInt(getNumberOfTracks());
+    }
+    
+    /**
+     * Play a random track.
+     */
+    public void playRandom()
+    {
+        stopPlaying();
+        playTrack(getRandomNumber());
+    }
+    
+    /**
+     * Play track in a non-repeat shuffle mode
+     */
+    public void playNoRepeatRandom()
+    {
+        int index;
+        stopPlaying();
+        for (int i = 0; i <= getNumberOfTracks(); i++){
+            index = getRandomNumber();
+            if (tracks.get(index).getPlayCount() == 0){
+                playTrack(index);
+                return;
+            }
+        }
+    }           
 }
